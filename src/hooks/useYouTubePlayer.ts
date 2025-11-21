@@ -80,35 +80,6 @@ export const useYouTubePlayer = (): YouTubePlayerManager => {
         onReady?: (duration: number) => void;
     }>>([]);
 
-    useEffect(() => {
-        const checkAPIReady = () => {
-            if (typeof window.YT !== 'undefined' && window.YT.Player) {
-                apiReadyRef.current = true;
-                pendingPlayersRef.current.forEach(({ sceneTrackId, youtubeId, onReady }) => {
-                    createPlayerInternal(sceneTrackId, youtubeId, onReady);
-                });
-                pendingPlayersRef.current = [];
-            } else {
-                setTimeout(checkAPIReady, 100);
-            }
-        };
-
-        if (!apiReadyRef.current) {
-            checkAPIReady();
-        }
-
-        return () => {
-            Object.values(playersRef.current).forEach(player => {
-                try {
-                    player.destroy();
-                } catch (e) {
-                    console.error('Error destroying YouTube player:', e);
-                }
-            });
-            playersRef.current = {};
-        };
-    }, []);
-
     const createPlayerInternal = useCallback((sceneTrackId: string, youtubeId: string, onReady?: (duration: number) => void) => {
         if (playersRef.current[sceneTrackId]) {
             return;
@@ -116,7 +87,7 @@ export const useYouTubePlayer = (): YouTubePlayerManager => {
 
         const containerId = `youtube-player-${sceneTrackId}`;
         let container = document.getElementById(containerId);
-        
+
         if (!container) {
             container = document.createElement('div');
             container.id = containerId;
@@ -166,6 +137,35 @@ export const useYouTubePlayer = (): YouTubePlayerManager => {
         } catch (error) {
             console.error('Error creating YouTube player:', error);
         }
+    }, []);
+
+    useEffect(() => {
+        const checkAPIReady = () => {
+            if (typeof window.YT !== 'undefined' && window.YT.Player) {
+                apiReadyRef.current = true;
+                pendingPlayersRef.current.forEach(({ sceneTrackId, youtubeId, onReady }) => {
+                    createPlayerInternal(sceneTrackId, youtubeId, onReady);
+                });
+                pendingPlayersRef.current = [];
+            } else {
+                setTimeout(checkAPIReady, 100);
+            }
+        };
+
+        if (!apiReadyRef.current) {
+            checkAPIReady();
+        }
+
+        return () => {
+            Object.values(playersRef.current).forEach(player => {
+                try {
+                    player.destroy();
+                } catch (e) {
+                    console.error('Error destroying YouTube player:', e);
+                }
+            });
+            playersRef.current = {};
+        };
     }, []);
 
     const createPlayer = useCallback((sceneTrackId: string, youtubeId: string, onReady?: (duration: number) => void) => {
@@ -222,7 +222,7 @@ export const useYouTubePlayer = (): YouTubePlayerManager => {
 
     const setVolume = useCallback((sceneTrackId: string, volume: number) => {
         const player = playersRef.current[sceneTrackId];
-        if (player) {
+        if (player && typeof player.setVolume === 'function') {
             try {
                 player.setVolume(volume * 100);
             } catch (e) {
@@ -257,7 +257,7 @@ export const useYouTubePlayer = (): YouTubePlayerManager => {
 
     const isPlaying = useCallback((sceneTrackId: string): boolean => {
         const player = playersRef.current[sceneTrackId];
-        if (player) {
+        if (player && typeof player.getPlayerState === 'function') {
             try {
                 return player.getPlayerState() === window.YT.PlayerState.PLAYING;
             } catch (e) {
