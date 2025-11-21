@@ -136,40 +136,6 @@ export const AudioUpload: React.FC = () => {
                     )}
                 </form>
             </div>
-
-            {/* Test Upload Button */}
-            <button
-                onClick={async (e) => {
-                    e.stopPropagation();
-                    const response = await fetch('/fly.mp3');
-                    const blob = await response.blob();
-                    const file = new File([blob], 'fly.mp3', { type: 'audio/mpeg' });
-
-                    // Get actual duration
-                    const duration = await new Promise<number>((resolve) => {
-                        const audio = new Audio();
-                        audio.addEventListener('loadedmetadata', () => {
-                            resolve(audio.duration);
-                        });
-                        audio.addEventListener('error', () => {
-                            resolve(0);
-                        });
-                        audio.src = URL.createObjectURL(file);
-                    });
-
-                    const newTrack: Track = {
-                        id: crypto.randomUUID(),
-                        name: 'fly',
-                        file: file,
-                        duration: duration,
-                        type: 'local',
-                    };
-                    await addTrack(newTrack);
-                }}
-                className="mt-2 text-xs text-neutral-500 hover:text-white underline"
-            >
-                Test Upload (fly.mp3)
-            </button>
         </>
     );
 };
