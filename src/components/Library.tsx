@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { Trash2, GripVertical } from 'lucide-react';
+import { GripVertical, Music, Video, Trash2 } from 'lucide-react';
 import { useStore } from '../store/useStore';
+import { AudioUpload } from './AudioUpload';
 
 export const Library: React.FC = () => {
     const { tracks, removeTrack } = useStore();
@@ -22,6 +23,9 @@ export const Library: React.FC = () => {
                 <h2 className="text-lg font-semibold text-neutral-200">Audio Library</h2>
                 <p className="text-xs text-neutral-500">Drag tracks to scenes</p>
             </div>
+
+            <AudioUpload />
+
             <div className="flex-1 overflow-y-auto flex flex-col gap-2">
                 {tracks.length === 0 && (
                     <p className="text-neutral-500 text-sm text-center py-4">No tracks uploaded.</p>
@@ -41,20 +45,23 @@ export const Library: React.FC = () => {
                             border-2 border-transparent hover:border-indigo-500/30
                         `}
                     >
-                        {/* Drag Handle */}
                         <GripVertical className="w-4 h-4 text-neutral-500 group-hover:text-indigo-400 flex-shrink-0 transition-colors" />
 
-                        {/* Track Name */}
+                        {track.type === 'youtube' ? (
+                            <Video className="w-4 h-4 text-red-500 flex-shrink-0" />
+                        ) : (
+                            <Music className="w-4 h-4 text-neutral-400 flex-shrink-0" />
+                        )}
+
                         <div className="truncate flex-1 min-w-0">
                             <p className="font-medium text-sm text-neutral-200 truncate" title={track.name}>
                                 {track.name}
                             </p>
                             <p className="text-xs text-neutral-500 mt-0.5">
-                                {Math.floor(track.duration / 60)}:{String(Math.floor(track.duration % 60)).padStart(2, '0')}
+                                {track.duration > 0 ? `${Math.floor(track.duration / 60)}:${String(Math.floor(track.duration % 60)).padStart(2, '0')}` : 'Loading...'}
                             </p>
                         </div>
 
-                        {/* Delete Button */}
                         <button
                             onClick={() => removeTrack(track.id)}
                             className="p-1.5 hover:bg-red-500/20 text-neutral-400 hover:text-red-400 rounded flex-shrink-0 transition-colors"

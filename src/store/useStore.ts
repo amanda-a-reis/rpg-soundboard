@@ -42,7 +42,9 @@ export const useStore = create<AppState>()(
 
       addTrack: async (track) => {
         // Save blob to IndexedDB
-        await idbSet(track.id, track.file);
+        if (track.file) {
+          await idbSet(track.id, track.file);
+        }
 
         set((state) => ({
           tracks: [...state.tracks, track],
@@ -50,12 +52,13 @@ export const useStore = create<AppState>()(
       },
 
       removeTrack: async (trackId) => {
-        // Remove blob from IndexedDB
-        await idbDel(trackId);
+        const track = get().tracks.find(t => t.id === trackId);
+        if (track?.file) {
+          await idbDel(trackId);
+        }
 
         set((state) => ({
           tracks: state.tracks.filter((t) => t.id !== trackId),
-          // Remove from all scenes where it might be referenced
           scenes: state.scenes.map(s => ({
             ...s,
             tracks: s.tracks.filter(st => st.sourceTrackId !== trackId)
@@ -182,7 +185,7 @@ export const useStore = create<AppState>()(
       name: 'rpg-soundboard-storage',
       storage: createJSONStorage(() => localStorage),
       partialize: (state) => ({
-        tracks: state.tracks.map(t => ({ ...t, file: undefined as any })), // Don't persist blobs to localStorage
+        tracks: state.tracks.map(t => ({ ...t, file: undefined })), // Don't persist blobs to localStorage
         scenes: state.scenes,
         activeSceneId: state.activeSceneId,
       }),

@@ -1,8 +1,11 @@
 export interface Track {
     id: string;
     name: string;
-    file: Blob; // We store the file blob for playback
+    file?: Blob;            // For local audio files
+    youtubeId?: string;      // For YouTube videos
     duration: number;
+    type: 'local' | 'youtube';
+    thumbnail?: string;      // YouTube thumbnail URL (optional)
 }
 
 export interface SceneTrack {
